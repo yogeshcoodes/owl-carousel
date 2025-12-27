@@ -12,7 +12,6 @@ body {
   padding: 40px 0;
   user-select: none;
   scroll-behavior: smooth;
-  user-select: none;
   -webkit-tap-highlight-color: transparent;
   /* overflow: hidden; */
 }
@@ -177,14 +176,19 @@ button {
 }
 
 @media (max-width: 600px) {
-  button {
-  }
-
   .slide-item {
     font-size: 40px;
   }
 
   .fade-slide {
     font-size: 40px;
+  }
+
+  .nav-arrow {
+    border-radius: 8px;
+  }
+  .nav-arrow:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transition: all 0.3 ease;
   }
 }
