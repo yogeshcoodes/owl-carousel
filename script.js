@@ -23,7 +23,7 @@ let pauseUntilRelease = false;
 let fadeStartX = 0;
 let fadeDragging = false;
 
-/* show slide */
+/* show fade slide */
 function showFadeSlide(i){
   fadeSlides.forEach(s => s.classList.remove("active"));
   fadeDots.forEach(d => d.classList.remove("active"));
@@ -91,14 +91,9 @@ function fadeEnd(x){
   pauseUntilRelease = false;
 
   let diff = x - fadeStartX;
-  if(diff > 50){
-    lockSwipe();
-    showFadeSlide(fadeCurrent - 1);
-  }
-  if(diff < -50){
-    lockSwipe();
-    showFadeSlide(fadeCurrent + 1);
-  }
+  if(diff > 50) showFadeSlide(fadeCurrent - 1);
+  if(diff < -50) showFadeSlide(fadeCurrent + 1);
+
   pauseFade();
 }
 
@@ -124,14 +119,27 @@ let currentX = 0;
 let isDragging = false;
 let slideWidth = slideBox.offsetWidth;
 
+
+/* arrow visibility */
+function updateSlideArrows(){
+  prevBtn.style.display = slideCurrent === 0 ? "none" : "flex";
+  nextBtn.style.display =
+    slideCurrent === slideItems.length - 1 ? "none" : "flex";
+}
+
+
 /* show slide */
 function showSlide(i){
   slideTrack.style.transition = "transform 0.35s ease";
   slideTrack.style.transform = `translateX(-${i * slideWidth}px)`;
+
   slideDots.forEach(d => d.classList.remove("active"));
   slideDots[i].classList.add("active");
+
   slideCurrent = i;
+  updateSlideArrows();
 }
+
 
 /* arrows */
 prevBtn.onclick = () => {
@@ -146,6 +154,7 @@ nextBtn.onclick = () => {
   showSlide(slideCurrent + 1);
 };
 
+
 /* dots */
 slideDots.forEach(dot => {
   dot.onclick = () => {
@@ -155,7 +164,8 @@ slideDots.forEach(dot => {
   };
 });
 
-/* touch + mouse (slide) */
+
+/* touch + mouse slide */
 function slideStart(x){
   if(!canSwipe) return;
   startX = x;
@@ -167,6 +177,7 @@ function slideStart(x){
 function slideMove(x){
   if(!isDragging) return;
   currentX = x;
+
   let diff = currentX - startX;
 
   if(
@@ -185,7 +196,7 @@ function slideEnd(){
   isDragging = false;
 
   let diff = currentX - startX;
-  let threshold = slideWidth * 0.3; // ✅ 30% swipe rule
+  let threshold = slideWidth * 0.3;
 
   if(diff < -threshold && slideCurrent < slideItems.length - 1){
     lockSwipe();
@@ -200,19 +211,27 @@ function slideEnd(){
   }
 }
 
-/* touch */
 slideBox.addEventListener("touchstart", e => slideStart(e.touches[0].clientX));
 slideBox.addEventListener("touchmove",  e => slideMove(e.touches[0].clientX));
 slideBox.addEventListener("touchend",   slideEnd);
 
-/* mouse */
 slideBox.addEventListener("mousedown", e => slideStart(e.clientX));
 window.addEventListener("mousemove",   e => slideMove(e.clientX));
 window.addEventListener("mouseup",     slideEnd);
 
 
-/* resize */
+/* =====================================================
+   RESIZE FIX (NO SIDE IMAGE FLASH)
+===================================================== */
 window.addEventListener("resize", () => {
+  slideTrack.style.transition = "none"; // 🔥 stop animation
   slideWidth = slideBox.offsetWidth;
-  showSlide(slideCurrent);
+  slideTrack.style.transform = `translateX(-${slideCurrent * slideWidth}px)`;
+
+  requestAnimationFrame(() => {
+    slideTrack.style.transition = "transform 0.35s ease";
+  });
 });
+
+/* initial state */
+updateSlideArrows();
