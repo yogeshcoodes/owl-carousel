@@ -1,90 +1,51 @@
-// your code goes here
-const slides = document.querySelectorAll(".slide");
-const dots = document.querySelectorAll(".dot");
-const slider = document.querySelector(".slides");
+/* ================= FADE CAROUSEL (UNCHANGED) ================= */
+const fadeSlides = document.querySelectorAll(".fade-slide");
+const fadeDots = document.querySelectorAll("#fade-dots .dot");
 
-let current = 0;
-let interval = 3000;
-let timer = null;
-let holdTimer = null;
-let isPaused = false;
+let fadeCurrent = 0;
 
-/* ---------- core ---------- */
-function showSlide(index) {
-  slides.forEach((s) => s.classList.remove("active"));
-  dots.forEach((d) => d.classList.remove("active"));
-
-  slides[index].classList.add("active");
-  dots[index].classList.add("active");
-  current = index;
+function showFadeSlide(i){
+  fadeSlides.forEach(s=>s.classList.remove("active"));
+  fadeDots.forEach(d=>d.classList.remove("active"));
+  fadeSlides[i].classList.add("active");
+  fadeDots[i].classList.add("active");
+  fadeCurrent = i;
 }
 
-/* ---------- autoplay ---------- */
-function startAutoPlay() {
-  if (timer || isPaused) return;
+setInterval(()=>{
+  showFadeSlide((fadeCurrent+1)%fadeSlides.length);
+},3000);
 
-  timer = setInterval(() => {
-    showSlide((current + 1) % slides.length);
-  }, interval);
-}
-
-function stopAutoPlay() {
-  clearInterval(timer);
-  timer = null;
-}
-
-/* ---------- dots ---------- */
-dots.forEach((dot) => {
-  dot.addEventListener("click", () => {
-    showSlide(+dot.dataset.slide);
-    stopAutoPlay();
-    startAutoPlay();
+fadeDots.forEach(dot=>{
+  dot.addEventListener("click",()=>{
+    showFadeSlide(+dot.dataset.slide);
   });
 });
 
-/* ---------- swipe ---------- */
-let startX = 0;
+/* ================= SLIDE CAROUSEL (AUTO PLAY REMOVED) ================= */
+const slideTrack = document.getElementById("slideTrack");
+const slideItems = document.querySelectorAll(".slide-item");
+const slideDots = document.querySelectorAll(".slide-dot");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
 
-slider.addEventListener("touchstart", (e) => {
-  startX = e.touches[0].clientX;
+let slideCurrent = 0;
 
-  holdTimer = setTimeout(() => {
-    isPaused = true;
-    stopAutoPlay();
-  }, 2000);
+function showSlide(i){
+  slideTrack.style.transform = `translateX(-${i*100}%)`;
+  slideDots.forEach(d=>d.classList.remove("active"));
+  slideDots[i].classList.add("active");
+  slideCurrent = i;
+}
+
+prevBtn.onclick = ()=>{
+  showSlide((slideCurrent-1+slideItems.length)%slideItems.length);
+};
+
+nextBtn.onclick = ()=>{
+  showSlide((slideCurrent+1)%slideItems.length);
+};
+
+slideDots.forEach(dot=>{
+  dot.onclick = ()=> showSlide(+dot.dataset.slide);
 });
-
-slider.addEventListener("touchend", (e) => {
-  clearTimeout(holdTimer);
-
-  let endX = e.changedTouches[0].clientX;
-  let diff = startX - endX;
-
-  if (Math.abs(diff) > 50) {
-    if (diff > 0) {
-      showSlide((current + 1) % slides.length);
-    } else {
-      showSlide((current - 1 + slides.length) % slides.length);
-    }
-  }
-
-  isPaused = false;
-  startAutoPlay();
-});
-
-/* ---------- mouse hover ---------- */
-slider.addEventListener("mouseenter", () => {
-  holdTimer = setTimeout(() => {
-    isPaused = true;
-    stopAutoPlay();
-  }, 2000);
-});
-
-slider.addEventListener("mouseleave", () => {
-  clearTimeout(holdTimer);
-  isPaused = false;
-  startAutoPlay();
-});
-
-/* ---------- init ---------- */
-startAutoPlay();
