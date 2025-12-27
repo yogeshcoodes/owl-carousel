@@ -34,6 +34,7 @@ h2{
   border-radius:16px;
   overflow:hidden;
 }
+
 .fade-slide{
   position:absolute;
   inset:0;
@@ -45,14 +46,17 @@ h2{
   font-size:48px;
   color:#fff;
 }
+
 .fade-slide.active{opacity:1;}
+
 .dots{
   margin-top:18px;
   display:flex;
   justify-content:center;
   gap:12px;
 }
-.dot,.slide-dot{
+
+.dot{
   width:12px;
   height:12px;
   border-radius:50%;
@@ -60,7 +64,8 @@ h2{
   opacity:.6;
   cursor:pointer;
 }
-.dot.active,.slide-dot.active{opacity:1}
+
+.dot.active{opacity:1}
 
 /* SLIDE */
 .slide-carousel-wrapper{
@@ -69,11 +74,13 @@ h2{
   overflow:hidden;
   border-radius:16px;
 }
+
 .slide-track{
   display:flex;
   height:100%;
   transition:transform .5s ease;
 }
+
 .slide-item{
   min-width:100%;
   display:flex;
@@ -83,6 +90,7 @@ h2{
   color:#fff;
 }
 
+/* ARROWS (shared) */
 .nav-arrow{
   position:absolute;
   top:50%;
@@ -93,9 +101,10 @@ h2{
   background:rgba(255,255,255,.3);
   border:none;
   cursor:pointer;
-  font-size:24px;
+  font-size:26px;
   color:#fff;
   z-index:10;
 }
+
 .nav-arrow.left{left:20px;}
 .nav-arrow.right{right:20px;}

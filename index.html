@@ -13,13 +13,19 @@
   <!-- FADE CAROUSEL -->
   <div class="carousel-section">
     <h2>Fade Carousel</h2>
+
     <div class="fade-carousel">
-      <div class="fade-slides">
+      <div class="fade-slides" id="fadeCarousel">
+        <button class="nav-arrow left" id="fadePrev">‹</button>
+
         <div class="fade-slide active" style="background:#ff4d4d">Slide 1</div>
         <div class="fade-slide" style="background:#4d79ff">Slide 2</div>
         <div class="fade-slide" style="background:#4dff88">Slide 3</div>
         <div class="fade-slide" style="background:#ffb84d">Slide 4</div>
+
+        <button class="nav-arrow right" id="fadeNext">›</button>
       </div>
+
       <div class="dots" id="fade-dots">
         <span class="dot active" data-slide="0"></span>
         <span class="dot" data-slide="1"></span>
@@ -32,9 +38,11 @@
   <!-- SLIDE CAROUSEL -->
   <div class="carousel-section">
     <h2>Slide Carousel</h2>
+
     <div class="slide-carousel">
-      <div class="slide-carousel-wrapper">
+      <div class="slide-carousel-wrapper" id="slideCarousel">
         <button class="nav-arrow left" id="prevBtn">‹</button>
+
         <div class="slide-track" id="slideTrack">
           <div class="slide-item" style="background:#9b59b6">Slide 1</div>
           <div class="slide-item" style="background:#e74c3c">Slide 2</div>
@@ -42,15 +50,16 @@
           <div class="slide-item" style="background:#2ecc71">Slide 4</div>
           <div class="slide-item" style="background:#f39c12">Slide 5</div>
         </div>
+
         <button class="nav-arrow right" id="nextBtn">›</button>
       </div>
 
-      <div class="slide-dots" id="slide-dots">
-        <span class="slide-dot active" data-slide="0"></span>
-        <span class="slide-dot" data-slide="1"></span>
-        <span class="slide-dot" data-slide="2"></span>
-        <span class="slide-dot" data-slide="3"></span>
-        <span class="slide-dot" data-slide="4"></span>
+      <div class="dots" id="slide-dots">
+        <span class="dot active" data-slide="0"></span>
+        <span class="dot" data-slide="1"></span>
+        <span class="dot" data-slide="2"></span>
+        <span class="dot" data-slide="3"></span>
+        <span class="dot" data-slide="4"></span>
       </div>
     </div>
   </div>
