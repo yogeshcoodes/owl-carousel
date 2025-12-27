@@ -1,95 +1,60 @@
 /* =====================================================
    GLOBAL SWIPE LOCK
-   Purpose:
-   - User agar 1 sec me 30–40 swipe kare
-   - To UI pagal na ho
-   - 1 action ke baad 0.2 sec ka cooldown
 ===================================================== */
-
 let canSwipe = true;
-
 function lockSwipe(){
-  canSwipe = false;              // swipe temporarily disable
-  setTimeout(() => {
-    canSwipe = true;             // swipe re-enable after 0.2 sec
-  }, 200);
+  canSwipe = false;
+  setTimeout(() => canSwipe = true, 200);
 }
 
 
 /* =====================================================
-   FADE CAROUSEL
-   Features:
-   - Infinite loop
-   - Autoplay
-   - Smart pause on interaction
-   - Pause on touch-hold
+   FADE CAROUSEL (INFINITE + SMART PAUSE)
 ===================================================== */
+const fadeSlides = document.querySelectorAll(".fade-slide");
+const fadeDots   = document.querySelectorAll("#fade-dots .dot");
+const fadeBox    = document.getElementById("fadeCarousel");
+const fadePrev   = document.getElementById("fadePrev");
+const fadeNext   = document.getElementById("fadeNext");
 
-const fadeSlides = document.querySelectorAll(".fade-slide");   // all fade slides
-const fadeDots   = document.querySelectorAll("#fade-dots .dot"); // dots
-const fadeBox    = document.getElementById("fadeCarousel");    // carousel container
-const fadePrev   = document.getElementById("fadePrev");        // left arrow
-const fadeNext   = document.getElementById("fadeNext");        // right arrow
+let fadeCurrent = 0;
+let fadeAutoTimer = null;
+let pauseUntilRelease = false;
+let fadeStartX = 0;
+let fadeDragging = false;
 
-let fadeCurrent = 0;           // current slide index
-let fadeAutoTimer = null;      // autoplay interval reference
-let pauseUntilRelease = false; // true when user is holding touch
-
-
-/* -----------------------------------------------------
-   Show specific fade slide (with infinite wrapping)
------------------------------------------------------ */
+/* show slide */
 function showFadeSlide(i){
-
-  // remove active state from all slides & dots
   fadeSlides.forEach(s => s.classList.remove("active"));
   fadeDots.forEach(d => d.classList.remove("active"));
 
-  // infinite loop logic
   if(i < 0) i = fadeSlides.length - 1;
   if(i >= fadeSlides.length) i = 0;
 
-  // activate selected slide & dot
   fadeSlides[i].classList.add("active");
   fadeDots[i].classList.add("active");
-
-  fadeCurrent = i; // update current index
+  fadeCurrent = i;
 }
 
-
-/* -----------------------------------------------------
-   Start autoplay
------------------------------------------------------ */
+/* autoplay */
 function startFadeAuto(){
-  clearInterval(fadeAutoTimer);   // safety clear
+  clearInterval(fadeAutoTimer);
   fadeAutoTimer = setInterval(() => {
     showFadeSlide(fadeCurrent + 1);
   }, 3000);
 }
 
-
-/* -----------------------------------------------------
-   Pause autoplay temporarily
-   - default pause: 1 sec
------------------------------------------------------ */
 function pauseFade(ms = 1000){
   clearInterval(fadeAutoTimer);
-
-  // agar user touch hold me hai → resume mat karo
   if(pauseUntilRelease) return;
-
   setTimeout(startFadeAuto, ms);
 }
 
-// start autoplay on load
 startFadeAuto();
 
-
-/* -----------------------------------------------------
-   Arrow controls
------------------------------------------------------ */
+/* arrows */
 fadePrev.onclick = () => {
-  if(!canSwipe) return;     // spam protection
+  if(!canSwipe) return;
   lockSwipe();
   pauseFade();
   showFadeSlide(fadeCurrent - 1);
@@ -102,10 +67,7 @@ fadeNext.onclick = () => {
   showFadeSlide(fadeCurrent + 1);
 };
 
-
-/* -----------------------------------------------------
-   Dot controls
------------------------------------------------------ */
+/* dots */
 fadeDots.forEach(dot => {
   dot.onclick = () => {
     if(!canSwipe) return;
@@ -115,80 +77,63 @@ fadeDots.forEach(dot => {
   };
 });
 
+/* touch + mouse (fade) */
+function fadeStart(x){
+  fadeStartX = x;
+  pauseUntilRelease = true;
+  fadeDragging = true;
+  clearInterval(fadeAutoTimer);
+}
 
-/* -----------------------------------------------------
-   Swipe + Touch Hold (Mobile UX)
------------------------------------------------------ */
-let fadeStartX = 0;
+function fadeEnd(x){
+  if(!fadeDragging) return;
+  fadeDragging = false;
+  pauseUntilRelease = false;
 
-fadeBox.addEventListener("touchstart", e => {
-  fadeStartX = e.touches[0].clientX; // starting touch position
-  pauseUntilRelease = true;          // mark hold state
-  clearInterval(fadeAutoTimer);      // hard pause autoplay
-});
-
-fadeBox.addEventListener("touchend", e => {
-  pauseUntilRelease = false;         // user released touch
-
-  let diff = e.changedTouches[0].clientX - fadeStartX;
-
-  // swipe right
+  let diff = x - fadeStartX;
   if(diff > 50){
     lockSwipe();
     showFadeSlide(fadeCurrent - 1);
   }
-
-  // swipe left
   if(diff < -50){
     lockSwipe();
     showFadeSlide(fadeCurrent + 1);
   }
+  pauseFade();
+}
 
-  pauseFade(); // resume autoplay after 1.5 sec
-});
+fadeBox.addEventListener("touchstart", e => fadeStart(e.touches[0].clientX));
+fadeBox.addEventListener("touchend",   e => fadeEnd(e.changedTouches[0].clientX));
+fadeBox.addEventListener("mousedown",  e => fadeStart(e.clientX));
+window.addEventListener("mouseup",     e => fadeEnd(e.clientX));
 
 
 /* =====================================================
-   SLIDE CAROUSEL
-   Features:
-   - Live drag
-   - Edge resistance
-   - No infinite loop
-   - 80% swipe threshold
-   - Swipe lock
+   SLIDE CAROUSEL (POLISHED + TOUCH + MOUSE)
 ===================================================== */
-
-const slideTrack = document.getElementById("slideTrack");       // track wrapper
-const slideItems = document.querySelectorAll(".slide-item");   // slides
+const slideTrack = document.getElementById("slideTrack");
+const slideItems = document.querySelectorAll(".slide-item");
 const slideDots  = document.querySelectorAll("#slide-dots .dot");
 const prevBtn    = document.getElementById("prevBtn");
 const nextBtn    = document.getElementById("nextBtn");
 const slideBox   = document.getElementById("slideCarousel");
 
-let slideCurrent = 0;       // current slide index
-let startX = 0;             // touch start position
-let currentX = 0;           // live touch position
-let isDragging = false;     // dragging flag
-let slideWidth = slideBox.offsetWidth; // slide width
+let slideCurrent = 0;
+let startX = 0;
+let currentX = 0;
+let isDragging = false;
+let slideWidth = slideBox.offsetWidth;
 
-
-/* -----------------------------------------------------
-   Show slide by index
------------------------------------------------------ */
+/* show slide */
 function showSlide(i){
   slideTrack.style.transition = "transform 0.35s ease";
   slideTrack.style.transform = `translateX(-${i * slideWidth}px)`;
-
   slideDots.forEach(d => d.classList.remove("active"));
   slideDots[i].classList.add("active");
-
   slideCurrent = i;
 }
 
-
-/* -----------------------------------------------------
-   Arrow buttons
------------------------------------------------------ */
+/* arrows */
 prevBtn.onclick = () => {
   if(!canSwipe || slideCurrent === 0) return;
   lockSwipe();
@@ -201,10 +146,7 @@ nextBtn.onclick = () => {
   showSlide(slideCurrent + 1);
 };
 
-
-/* -----------------------------------------------------
-   Dot navigation
------------------------------------------------------ */
+/* dots */
 slideDots.forEach(dot => {
   dot.onclick = () => {
     if(!canSwipe) return;
@@ -213,31 +155,20 @@ slideDots.forEach(dot => {
   };
 });
 
-
-/* -----------------------------------------------------
-   Touch start (begin drag)
------------------------------------------------------ */
-slideBox.addEventListener("touchstart", e => {
+/* touch + mouse (slide) */
+function slideStart(x){
   if(!canSwipe) return;
-
-  startX = e.touches[0].clientX;
-  currentX = startX;
+  startX = x;
+  currentX = x;
   isDragging = true;
+  slideTrack.style.transition = "none";
+}
 
-  slideTrack.style.transition = "none"; // disable animation during drag
-});
-
-
-/* -----------------------------------------------------
-   Touch move (live drag)
------------------------------------------------------ */
-slideBox.addEventListener("touchmove", e => {
+function slideMove(x){
   if(!isDragging) return;
-
-  currentX = e.touches[0].clientX;
+  currentX = x;
   let diff = currentX - startX;
 
-  // edge resistance
   if(
     (slideCurrent === 0 && diff > 0) ||
     (slideCurrent === slideItems.length - 1 && diff < 0)
@@ -247,19 +178,14 @@ slideBox.addEventListener("touchmove", e => {
 
   slideTrack.style.transform =
     `translateX(${ -slideCurrent * slideWidth + diff }px)`;
-});
+}
 
-
-/* -----------------------------------------------------
-   Touch end (release)
------------------------------------------------------ */
-slideBox.addEventListener("touchend", () => {
+function slideEnd(){
   if(!isDragging || !canSwipe) return;
-
   isDragging = false;
 
   let diff = currentX - startX;
-  let threshold = slideWidth * 0.8; // 80% rule
+  let threshold = slideWidth * 0.3; // ✅ 30% swipe rule
 
   if(diff < -threshold && slideCurrent < slideItems.length - 1){
     lockSwipe();
@@ -270,14 +196,22 @@ slideBox.addEventListener("touchend", () => {
     showSlide(slideCurrent - 1);
   }
   else{
-    showSlide(slideCurrent); // snap back
+    showSlide(slideCurrent);
   }
-});
+}
+
+/* touch */
+slideBox.addEventListener("touchstart", e => slideStart(e.touches[0].clientX));
+slideBox.addEventListener("touchmove",  e => slideMove(e.touches[0].clientX));
+slideBox.addEventListener("touchend",   slideEnd);
+
+/* mouse */
+slideBox.addEventListener("mousedown", e => slideStart(e.clientX));
+window.addEventListener("mousemove",   e => slideMove(e.clientX));
+window.addEventListener("mouseup",     slideEnd);
 
 
-/* -----------------------------------------------------
-   Resize safety (responsive fix)
------------------------------------------------------ */
+/* resize */
 window.addEventListener("resize", () => {
   slideWidth = slideBox.offsetWidth;
   showSlide(slideCurrent);
